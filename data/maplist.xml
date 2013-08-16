@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<Maps>
+	<map name="argentina" path="maps/argentina/argentina.xml">
+		<fullname>Battle for Pampas</fullname>
+		<preview>maps/argentina/sml_argentina.png</preview>
+	</map>
+	<map name="wellington" path="maps/wellington/wellington.xml">
+		<fullname>Wellington Campaign</fullname>
+		<preview>maps/wellington/sml_wellington.png</preview>
+	</map>
+</Maps>

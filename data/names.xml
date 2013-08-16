@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<Names>
+	<first_names>
+		<name>Alexander</name>
+		<name>Ambrose</name>
+		<name>Anthony</name>
+		<name>Archibald</name>
+		<name>Arthur</name>
+		<name>Barnaby</name>
+		<name>Brian</name>
+		<name>Charles</name>
+		<name>Chidiock</name>
+		<name>Christopher</name>
+		<name>Cuthbert</name>
+		<name>David</name>
+		<name>Diggory</name>
+		<name>Edmund</name>
+		<name>Edward</name>
+		<name>Eustace</name>
+		<name>Francis</name>
+		<name>Geoffrey</name>
+		<name>George</name>
+		<name>Gerald</name>
+		<name>Germain</name>
+		<name>Henry</name>
+	</first_names>
+	<last_names>
+		<name>from Sandomierz</name>
+		<name>Delorme</name>
+		<name>Polack</name>
+		<name>van Eyck</name>
+		<name>Apianus</name>
+		<name>Cardano</name>
+		<name>Frisius</name>
+		<name>D'Aguilon</name>
+		<name>Oughtred</name>
+		<name>Napier</name>
+		<name>de Ronsard</name>
+		<name>de Rojas</name>
+		<name>Donne</name>
+		<name>of the Cross</name>
+		<name>Dowland</name>
+		<name>Wilaert</name>
+		<name>Ockeghem</name>
+		<name>Drake</name>
+		<name>Cabot</name>
+		<name>Elcano</name>
+		<name>Vespucci</name>
+		<name>Pizarro</name>
+	</last_names>
+	
+</Names>

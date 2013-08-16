@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<Traits>
+	<trait id = "0">
+		<name>None</name>
+		<variable>Default</variable>
+		<modifier>0</modifier>
+	</trait>
+	<trait id = "1">
+		<name>Charismatic</name>
+		<variable>skill</variable>
+		<modifier>+0.5</modifier>
+	</trait>
+	<trait id = "2">
+		<name>Attacker</name>
+		<variable>skill-attack</variable>
+		<modifier>+1.0</modifier>
+	</trait>
+	<trait id = "3">
+		<name>Defender</name>
+		<variable>skill-defend</variable>
+		<modifier>+1.0</modifier>
+	</trait>
+</Traits>
