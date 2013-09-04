@@ -1,6 +1,7 @@
-from pandac.PandaModules import CollisionTube, CollisionRay, CollisionTraverser, CollisionHandlerEvent,CollisionSphere, CollisionNode, CardMaker, TransparencyAttrib
+from pandac.PandaModules import CollisionTube, CollisionRay, CollisionTraverser, CollisionHandlerEvent,CollisionSphere, CollisionNode, CardMaker, TransparencyAttrib, CollisionPlane
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3, CardMaker
+import TimObjects
 
 class CollisionManager:
     def __init__(self):
@@ -8,11 +9,18 @@ class CollisionManager:
         self.col_handler = CollisionHandlerEvent()
 
         self.selected = -1
+        self.selected_node = None
 
         picker_node = CollisionNode("mouseRayNode")
         pickerNPos = base.camera.attachNewNode(picker_node)
         self.pickerRay = CollisionRay()
         picker_node.addSolid(self.pickerRay)
+
+        plane_node = CollisionNode("base_plane")
+        plane = base.render.attachNewNode(plane_node)
+        self.plane_col = CollisionPlane(Plane(Vec3(0, 0, 1), Point3(0, 0, 0)))
+        picker_node.addSolid(self.pickerRay)
+
 
         picker_node.setTag("rays","mray")
         base.cTrav.addCollider(pickerNPos, self.col_handler)
@@ -28,6 +36,8 @@ class CollisionManager:
         self.DO.accept('mray-out-army', self.col_out_object)
         self.DO.accept('mray-into-battle', self.col_in_object)
         self.DO.accept('mray-out-battle', self.col_out_object)
+        self.DO.accept('mray-into-tower', self.col_in_object)
+        self.DO.accept('mray-out-tower', self.col_out_object)
 
         self.DO.accept('ray_again_all', self.col_against_object)
 
@@ -44,9 +54,7 @@ class CollisionManager:
         self.DO.accept('mouse3-up', self.mouse_order)
 
         taskMgr.add(self.ray_update, "updatePicker")
-
         taskMgr.add(self.get_mouse_plane_pos, "MousePositionOnPlane")
-
 
         z = 0
         self.plane = Plane(Vec3(0, 0, 1), Point3(0, 0, z))
@@ -85,7 +93,7 @@ class CollisionManager:
             a2 = base.armies[a2_id]
             a1.stop()
             a2.stop()
-            base.battles.append(base.obj_manager.create_battle([a1,a2]))
+            base.battles.append(TimObjects.Battle([a1,a2]))
 
     def col_in_object(self,entry):
         np_into=entry.getIntoNodePath()
@@ -106,6 +114,7 @@ class CollisionManager:
         #self.global_text.setText("")
 
         self.pickable = None
+        self.selected_type = "none"
 
     def col_against_object(self,entry):
         if entry.getIntoNodePath().getParent() != self.pickable:
@@ -119,27 +128,35 @@ class CollisionManager:
 
 
     def mouse_click(self,status):
-        if self.pickable:
+        in_statbar = base.vis_manager.statbar.mouse_in_bar()
+        if self.pickable and in_statbar == False:
             if status == "down":
-                if self.selected_type == "army" and base.armies[int(self.pickable.getTag("id"))].state == "normal":
+                if self.selected_type == "army" and base.armies[int(self.pickable.getTag("id"))].state == "normal" or base.armies[int(self.pickable.getTag("id"))].state == "new":
                     self.pickable.setScale(0.95*10)
                     self.selected = int(self.pickable.getTag("id"))
                     self.selected_node = self.pickable
                     print "You clicked on Army"+str(self.selected)
                     base.vis_manager.statbar.show_army(self.selected)
+                elif self.selected_type == "tower":
+                    self.selected = int(self.pickable.getTag("id"))
+                    self.selected_node = self.pickable
+                    print "You clicked on a tower"
+                    base.vis_manager.statbar.show_tower(self.selected)
                 elif self.selected_type == "battle":
                     self.selected = int(self.pickable.getTag("id"))
                     self.selected_node = self.pickable
                     print "You clicked on a battle"
                     base.vis_manager.statbar.show_battle(self.selected)
-                else:
-                    base.vis_manager.statbar.reset_statbar()
+
             if status == "up":
                 if self.selected_type == "army":
                     self.pickable.setScale(1.0*10)
+        elif in_statbar == True:
+            print "in box"
         elif self.pickable == None:
             self.selected = -1
             self.selected_node = None
+            base.vis_manager.statbar.reset_statbar()
 
     def mouse_order(self):
         print "mouse_order"
