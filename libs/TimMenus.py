@@ -226,7 +226,7 @@ class MenuMulti(MenuType):
         base.client = True
         base.player = 2
         base.net_manager.connection_open()
-        if base.net_manager.client_connect("192.168.0.2"):
+        if base.net_manager.client_connect("192.168.1.12"):
             base.menu_manager.menus["mp-game"].join_init()
             base.menu_manager.menu_goto("mp-game")
         else:

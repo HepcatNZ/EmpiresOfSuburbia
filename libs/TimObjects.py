@@ -219,7 +219,7 @@ class Tower(GameObject):
         self.tower_fight_col.setPos(0,0,0)
         self.tower_fight_col.node().addSolid(CollisionSphere(0,0,0,1))
         self.tower_fight_col.setColor(1,0,0,0.1)
-        #self.tower_fight_col.setTag("player","p"+str(player))
+        self.tower_fight_col.setTag("player","p"+str(player))
         self.tower_fight_col.setTag("state","normal")
         base.cTrav.addCollider(self.tower_fight_col,base.col_manager.col_handler)
 
@@ -340,21 +340,25 @@ class Battle(GameObject):
         x_list = []
         y_list = []
         counter = 0
-        for a in self.combatants:
-            if a.state != "dead":
-                x_list.append(a.node_path.getX())
-                y_list.append(a.node_path.getY())
-                counter += 1
-                new_x += a.node_path.getX()
-                new_y += a.node_path.getY()
+        try:
+            for a in self.combatants:
+                if a.state != "dead":
+                    x_list.append(a.node_path.getX())
+                    y_list.append(a.node_path.getY())
+                    counter += 1
+                    new_x += a.node_path.getX()
+                    new_y += a.node_path.getY()
+        except:
+            pass
         new_x /= len(x_list)
         new_y /= len(y_list)
 
         self.node_path.setPos(new_x,new_y,0)
 
     def shrink(self):
-        self.col_scale -= self.col_scale_orig*self.col_scale_inc
-        self.bat_col.setScale((self.col_scale,self.col_scale,0.2))
+        if len(self.combatants) <= 10:
+            self.col_scale -= self.col_scale_orig*self.col_scale_inc
+            self.bat_col.setScale((self.col_scale,self.col_scale,0.2))
 
     def battle_init_rolls(self,task):
         init_rolls = []
@@ -490,8 +494,9 @@ class Battle(GameObject):
         army.army_fight_col.setTag("state","battle")
         army.battle = self.my_id
         self.combatants.append(army)
-        self.col_scale += self.col_scale_orig*self.col_scale_inc
-        self.bat_col.setScale((self.col_scale,self.col_scale,0.2))
+        if len(self.combatants) <= 10:
+            self.col_scale += self.col_scale_orig*self.col_scale_inc
+            self.bat_col.setScale((self.col_scale,self.col_scale,0.2))
 
         self.get_odds()
         self.recenter()
