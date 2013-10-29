@@ -1,5 +1,1 @@
-<?xml version="1.0" ?>
-<PlayerData>
-	<name>Player Name</name>
-	<kingdom>Player Kingdom</kingdom>
-</PlayerData>
+<PlayerData><name>Hans de Roode</name><kingdom>Graphin Confederacy</kingdom><direct_connect>192.168.1.12</direct_connect></PlayerData>

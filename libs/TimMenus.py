@@ -226,7 +226,7 @@ class MenuMulti(MenuType):
         base.client = True
         base.player = 2
         base.net_manager.connection_open()
-        if base.net_manager.client_connect("192.168.1.12"):
+        if base.net_manager.client_connect(base.direct_connect_ip):
             base.menu_manager.menus["mp-game"].join_init()
             base.menu_manager.menu_goto("mp-game")
         else:
@@ -440,6 +440,12 @@ class MenuOptions(MenuType):
                     initialText=base.player_kingdom, numLines = 1,focus=0)
         self.obj_list.append(entry_kgdm)#command=setText,#focusInCommand=self.clear_entry)
         self.obj_list.append(OnscreenText("Kingdom Name:",pos=(-1,0.8),style=1, fg=(1,1,1,1), scale = 0.05))
+
+        entry_ip = DirectEntry(pos = (-0.76,0,0.7),text = "" ,scale=.05, width = 15,
+                    initialText=base.direct_connect_ip, numLines = 1,focus=0)
+        self.obj_list.append(entry_ip)#command=setText,#focusInCommand=self.clear_entry)
+        self.obj_list.append(OnscreenText("Direct Connect IP:",pos=(-1,0.7),style=1, fg=(1,1,1,1), scale = 0.05))
+
         self.obj_list.append(self.SmallMenuButton("Save Changes",0.8,-0.8,0.6,0.2,self.menu_options_save))
 
     def menu_options_save(self):

@@ -24,6 +24,7 @@ class XMLManager:
         root = tree.getroot()
         base.player_name = root.find("name").text
         base.player_kingdom = root.find("kingdom").text
+        base.direct_connect_ip = root.find("direct_connect").text
 
     def save_playerdata(self):
         root = xml.Element("PlayerData")
@@ -33,6 +34,9 @@ class XMLManager:
         pking = xml.Element("kingdom")
         pking.text = base.player_kingdom
         root.append(pking)
+        dcip = xml.Element("direct_connect")
+        dcip.text = base.direct_connect_ip
+        root.append(dcip)
 
         fname = "user/player.xml"
         file = open(fname, 'w')

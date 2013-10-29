@@ -17,11 +17,13 @@ class VisualManager:
         self.buttons = []
         #self.mm = MainMenu()
 
+
     def text(self,t,x,y):
         return(OnscreenText(t,style=1, fg=(1,1,1,1), scale = 0.1))
 
     def statbar_create(self,height):
         self.statbar = GameStatBar(height)
+        self.res_bar = ResourceBar(-0.8,0.8,0.1)
 
     def get_player_col(self,player):
         if player == 0:
@@ -31,6 +33,9 @@ class VisualManager:
         elif player == 2:
             return (0,1,0,1)
 
+    def update(self):
+        self.res_bar.update()
+        self.statbar.update()
 
 class GameStatBar:
     def __init__(self,height):
@@ -62,6 +67,14 @@ class GameStatBar:
                text_scale = .05,frameSize=(-0.2,0.2,-0.05,0.05),borderWidth = (.02,.02),
                rolloverSound = None, clickSound = None,command=self.train_unit)
         self.but_cancel.hide()
+
+    def update(self):
+        if base.ecn_manager.gold >= base.ecn_manager.cost_army_gold:
+            self.but_train["state"] = 1
+            self.but_train["text_fg"] = (0,0,0,1)
+        else:
+            self.but_train["state"] = 0
+            self.but_train["text_fg"] = (1,0,0,1)
 
     def train_unit(self):
         print "TRAIN UNIT"
@@ -95,11 +108,11 @@ class GameStatBar:
         col = base.vis_manager.get_player_col(self.focus.player)
         self.objs[1].show()
         self.objs[1].setImage("textures/interface/tower.jpg")
-        if base.towers[tower_id].build_progress != 0.0:
+        if base.towers[tower_id].build_progress != 0.0 and self.focus.player == base.player:
             self.bar_build.show()
             self.but_train.hide()
             self.but_cancel.show()
-        else:
+        elif self.focus.player == base.player:
             self.bar_build.hide()
             self.but_train.show()
             self.but_cancel.hide()
@@ -114,7 +127,6 @@ class GameStatBar:
         self.objs[2].setFg(col)
         self.objs[3].hide()
         self.objs[4].hide()
-
 
     def reset_statbar(self):
         self.focus = None
@@ -195,3 +207,9 @@ class BattleText:
 
     def destroy(self):
         self.tnp.removeNode()
+
+class ResourceBar:
+    def __init__(self,x,y,size):
+        self.text = OnscreenText("Gold: "+str(base.ecn_manager.gold)+" +"+str(base.ecn_manager.gold_inc),pos = (x,y),scale = size,fg=base.vis_manager.get_player_col(base.player))
+    def update(self):
+        self.text.setText("Gold: "+str(base.ecn_manager.gold)+" +"+str(base.ecn_manager.gold_inc))

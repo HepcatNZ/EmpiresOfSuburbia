@@ -1,11 +1,12 @@
-from panda3d.core import Geom, GeomVertexData, GeomVertexFormat, GeomVertexWriter, GeomTriangles, GeomNode, NodePath
-from pandac.PandaModules import CollisionTube, CollisionTraverser, CollisionHandlerEvent, CollisionSphere, CollisionNode, CardMaker, TransparencyAttrib
+from panda3d.core import Geom, GeomVertexData, GeomVertexFormat, GeomVertexWriter, GeomTriangles, GeomNode, NodePath, LineSegs
+from pandac.PandaModules import CollisionTube, CollisionTraverser, CollisionHandlerEvent, CollisionSphere, CollisionNode, CardMaker, TransparencyAttrib, deg2Rad
 from TimCalc import TimCalc
 from direct.task import Task
 from direct.interval.IntervalGlobal import *
 from direct.showbase.ShowBase import Point3
 import random
 import TimVisuals
+import math
 
 counter_scale = 10
 battle_count = 0
@@ -33,6 +34,25 @@ class GameObject:
         self.node_path = None
         self.node_col = None
         self.player = 0
+        self.selected = True
+
+    def selection_ring_create(self, segments = 16,size = 1.0):
+        ls = LineSegs()
+        ls.setThickness(2)
+        ls.setColor(0.8,0.8,0.8)
+
+        radians = deg2Rad(360)
+
+        for i in range(segments+1):
+            a = radians * i / segments
+            y = math.sin(a)*size
+            x = math.cos(a)*size
+
+            ls.drawTo(x, y, 0.2)
+
+        node = ls.create()
+
+        return NodePath(node)
 
     def destroy(self):
         self.node_path.removeNode()
@@ -42,6 +62,20 @@ class GameObject:
 
     def get_y(self):
         return (self.node_path.getY())
+
+    def select(self):
+        self.selected = True
+        try:
+            self.selection_ring.show()
+        except:
+            print "Error showing"
+
+    def deselect(self):
+        self.selected = False
+        try:
+            self.selection_ring.hide()
+        except:
+            print "Error hiding"
 
 class MapTable(GameObject):
     def __init__(self):
@@ -71,6 +105,8 @@ class Army(GameObject):
         self.scale = counter_scale
         self.range = 50.0
 
+        self.selected = False
+
         self.general = general
         self.soldiers = soldiers
         self.state = "normal"
@@ -97,6 +133,7 @@ class Army(GameObject):
         self.node_path = NodePath("army"+str(self.my_id)+"_node_path")
         self.model.reparentTo(self.node_path)
         self.node_path.setPos(x,y,0)
+        self.node_path.setTag("player","p"+str(player))
         self.node_path.setScale(self.scale,self.scale,self.scale)
 
         self.node_col = self.node_path.attachNewNode(CollisionNode("army"+str(self.my_id)+"_c_node"))
@@ -114,8 +151,13 @@ class Army(GameObject):
         self.army_fight_col.setColor(1,0,0,0.1)
         self.army_fight_col.setTag("player","p"+str(player))
         self.army_fight_col.setTag("state","normal")
+        self.army_fight_col.setTag("type","army")
         base.cTrav.addCollider(self.army_fight_col,base.col_manager.col_handler)
         #self.army_fight_col.show()
+
+        self.selection_ring = self.selection_ring_create(size = 1.2)
+        self.selection_ring.reparentTo(self.node_path)
+        self.selection_ring.hide()
 
         self.node_path.reparentTo(render)
 
@@ -145,6 +187,9 @@ class Army(GameObject):
         self.sq_die.start()
         base.battles[self.battle].recenter()
         base.battles[self.battle].shrink()
+        if self.selected:
+            i = base.col_manager.selecteds.index(self)
+            del base.col_manager.selecteds[i]
 
     def stop(self):
         try:
@@ -195,6 +240,8 @@ class Tower(GameObject):
         self.state = "normal"
         self.build_progress = 0.0
         self.build_speed = 1.0
+        self.gold_inc = 1.0
+        base.ecn_manager.gold_inc += self.gold_inc
 
         if player == 1:
             self.model = loader.loadModel("models/tower_red.egg")
@@ -204,6 +251,7 @@ class Tower(GameObject):
         self.node_path = NodePath("tower"+str(self.my_id)+"_node_path")
         self.model.reparentTo(self.node_path)
         self.node_path.setPos(x,y,0)
+        self.node_path.setTag("player","p"+str(player))
         self.node_path.setScale(tower_scale,tower_scale,tower_scale)
 
         self.node_col = self.node_path.attachNewNode(CollisionNode("tower"+str(self.my_id)+"_c_node"))
@@ -221,18 +269,35 @@ class Tower(GameObject):
         self.tower_fight_col.setColor(1,0,0,0.1)
         self.tower_fight_col.setTag("player","p"+str(player))
         self.tower_fight_col.setTag("state","normal")
+        #self.tower_fight_col.show()
         base.cTrav.addCollider(self.tower_fight_col,base.col_manager.col_handler)
 
-
-#        self.selection_ring = loader.loadModel("models/selection_ring.egg")
-#        self.selection_ring.setPos(x,y,20)
-#        self.selection_ring.setScale(tower_scale*2,tower_scale*2,tower_scale)
-#        self.selection_ring.reparentTo(render)
-
+        self.selection_ring = self.selection_ring_create(size = 1.5)
+        self.selection_ring.reparentTo(self.node_path)
+        self.selection_ring.hide()
 
         self.node_path.reparentTo(render)
 
+    def change_owner(self,new_owner):
+        if self.player == base.player:
+            base.ecn_manager.gold_inc -= self.gold_inc
+        elif new_owner == base.player:
+            base.ecn_manager.gold_inc += self.gold_inc
+        base.vis_manager.update()
+        if new_owner == 1:
+            self.model.remove()
+            self.model = loader.loadModel("models/tower_red.egg")
+        elif new_owner == 2:
+            self.model.remove()
+            self.model = loader.loadModel("models/tower_green.egg")
+        self.node_path.setTag("player","p"+str(new_owner))
+        self.tower_fight_col.setTag("player","p"+str(new_owner))
+        self.player = new_owner
+        self.model.reparentTo(self.node_path)
+
     def build_cancel(self):
+        base.ecn_manager.gold += base.ecn_manager.cost_army_gold
+        base.vis_manager.update()
         if base.single_player == False and base.client == False:
                 base.net_manager.server_messager("build_cancel",[self.my_id])
         taskMgr.remove("task_tower"+str(self.my_id)+"_build")
@@ -241,6 +306,8 @@ class Tower(GameObject):
             base.vis_manager.statbar.show_tower(self.my_id)
 
     def build_start(self):
+        base.ecn_manager.gold -= base.ecn_manager.cost_army_gold
+        base.vis_manager.update()
         print "Started Building"
         if base.single_player == False and base.client == False:
                 base.net_manager.server_messager("build_start",[self.my_id,self.player,"army"])

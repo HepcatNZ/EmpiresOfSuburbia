@@ -3,7 +3,7 @@ from direct.showbase.ShowBase import ShowBase
 from pandac.PandaModules import *
 from direct.actor.Actor import Actor
 from libs.TimCam import TimCam
-from libs import TimObjects,TimCol,TimVisuals,TimNetwork,TimXML,TimMenus
+from libs import TimObjects,TimCol,TimVisuals,TimNetwork,TimXML,TimMenus,TimEconomy
 import random
 
 class EmpiresOfSuburbia(ShowBase):
@@ -16,7 +16,8 @@ class EmpiresOfSuburbia(ShowBase):
         self.single_player = False
         self.player_name = "Unknown Warrior"
         self.player_kingdom = "Unknown Kingdom"
-        self.player = 1
+        self.direct_connect_ip = "1.1.1.1"
+        self.player = 2
 
         wp = WindowProperties()
         #wp.setFullscreen(True)
@@ -48,6 +49,7 @@ class EmpiresOfSuburbia(ShowBase):
         #self.net_manager = TimNetwork.NetworkManager()
         cam = TimCam()
 
+        self.ecn_manager = TimEconomy.EconomyManager(100)
         self.col_manager = TimCol.CollisionManager()
         self.obj_manager = TimObjects.ObjectsManager()
         self.t_msg = self.vis_manager.statbar_create(0.5)
@@ -62,9 +64,9 @@ class EmpiresOfSuburbia(ShowBase):
             self.armies.append(TimObjects.Army(200+(48*i),550,2,"Infantry",0))
 
         for i in range (5):
-            self.towers.append(TimObjects.Tower(1,"Tower",200+(80*i),300))
+            self.towers.append(TimObjects.Tower(1,"Tower",200+(150*i),300))
         for i in range (5):
-            self.towers.append(TimObjects.Tower(2,"Tower",200+(80*i),700))
+            self.towers.append(TimObjects.Tower(2,"Tower",200+(150*i),700))
 
 
 

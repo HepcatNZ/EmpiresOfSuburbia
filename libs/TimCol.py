@@ -1,3 +1,4 @@
+from panda3d.core import NodePath, LineSegs, TextNode
 from pandac.PandaModules import CollisionTube, CollisionRay, CollisionTraverser, CollisionHandlerEvent,CollisionSphere, CollisionNode, CardMaker, TransparencyAttrib, CollisionPlane
 from direct.showbase.DirectObject import DirectObject
 from direct.showbase.ShowBase import Plane, ShowBase, Vec3, Point3, CardMaker
@@ -10,6 +11,10 @@ class CollisionManager:
 
         self.selected = -1
         self.selected_node = None
+        self.selecteds = []
+        self.multi_select = False
+        self.multi_selecting = False
+        self.select_box = NodePath()
 
         picker_node = CollisionNode("mouseRayNode")
         pickerNPos = base.camera.attachNewNode(picker_node)
@@ -45,13 +50,16 @@ class CollisionManager:
             self.col_handler.addInPattern("%(player)ft-into-%(player)it")
             self.col_handler.addInPattern("%(type)ft-into-%(type)it")
             self.DO.accept('army-into-battle', self.col_army_against_battle)
-            self.DO.accept('p1-into-p2', self.col_army_into_army)
+            self.DO.accept('army-into-tower', self.col_army_against_tower)
+            self.DO.accept('p1-into-p2', self.col_p1_into_p2)
 
         self.pickable=None
 
         self.DO.accept('mouse1', self.mouse_click, ["down"])
         self.DO.accept('mouse1-up', self.mouse_click, ["up"])
         self.DO.accept('mouse3-up', self.mouse_order)
+        self.DO.accept('lshift', self.set_multiselect, [True])
+        self.DO.accept('lshift-up', self.set_multiselect, [False])
 
         taskMgr.add(self.ray_update, "updatePicker")
         taskMgr.add(self.get_mouse_plane_pos, "MousePositionOnPlane")
@@ -82,8 +90,8 @@ class CollisionManager:
             b = base.battles[b_id]
             b.add_army(a)
 
-    def col_army_into_army(self,entry):
-        if entry.getFromNodePath().getTag("state") == "normal" and entry.getIntoNodePath().getTag("state") == "normal":
+    def col_p1_into_p2(self,entry):
+        if entry.getFromNodePath().getTag("state") == "normal" and entry.getIntoNodePath().getTag("state") == "normal" and entry.getIntoNodePath().getTag("type") == "army" and entry.getFromNodePath().getTag("type") == "army":
             #base.net_manager.battle_start(a1,a2)
             army1 = entry.getFromNodePath()
             army2 = entry.getIntoNodePath()
@@ -94,6 +102,12 @@ class CollisionManager:
             a1.stop()
             a2.stop()
             base.battles.append(TimObjects.Battle([a1,a2]))
+    def col_army_against_tower(self,entry):
+        if entry.getIntoNodePath().getParent().getTag("player") != entry.getFromNodePath().getParent().getTag("player"):
+            tower = entry.getIntoNodePath()
+            tower_id = int(tower.getParent().getTag("id")[-1])
+            invader = int(entry.getFromNodePath().getParent().getTag("player")[-1])
+            base.towers[tower_id].change_owner(invader)
 
     def col_in_object(self,entry):
         np_into=entry.getIntoNodePath()
@@ -128,18 +142,35 @@ class CollisionManager:
 
 
     def mouse_click(self,status):
+        print "click"
         in_statbar = base.vis_manager.statbar.mouse_in_bar()
-        if self.pickable and in_statbar == False:
+        if self.multi_select == True:
+            print "Multiselect!"
+            self.select_all_in_box()
+            self.multi_select == False
+        elif self.pickable and in_statbar == False:
             if status == "down":
                 if self.selected_type == "army" and base.armies[int(self.pickable.getTag("id"))].state == "normal" or base.armies[int(self.pickable.getTag("id"))].state == "new":
+                    for obj in self.selecteds:
+                        obj.deselect()
+                        print obj.my_id,"deselected"
+                    self.selecteds = []
                     self.pickable.setScale(0.95*10)
                     self.selected = int(self.pickable.getTag("id"))
                     self.selected_node = self.pickable
+                    self.selecteds.append(base.armies[self.selected])
+                    base.armies[self.selected].select()
                     print "You clicked on Army"+str(self.selected)
                     base.vis_manager.statbar.show_army(self.selected)
                 elif self.selected_type == "tower":
+                    for obj in self.selecteds:
+                        obj.deselect()
+                        print obj.my_id,"deselected"
+                    self.selecteds = []
                     self.selected = int(self.pickable.getTag("id"))
                     self.selected_node = self.pickable
+                    self.selecteds.append(base.towers[self.selected])
+                    base.towers[self.selected].select()
                     print "You clicked on a tower"
                     base.vis_manager.statbar.show_tower(self.selected)
                 elif self.selected_type == "battle":
@@ -154,15 +185,79 @@ class CollisionManager:
         elif in_statbar == True:
             print "in box"
         elif self.pickable == None:
+            for obj in self.selecteds:
+                obj.deselect()
+                print obj.my_id,"deselected"
+            self.selecteds = []
             self.selected = -1
             self.selected_node = None
             base.vis_manager.statbar.reset_statbar()
 
+    def select_all_in_box(self):
+        for obj in self.selecteds:
+            obj.deselect()
+            print obj.my_id,"deselected"
+        self.selecteds = []
+        print "select units in box"
+        for a in base.armies:
+            if a.node_col.getTag("type") == "army" and (a.state == "normal" or a.state == "new") and a.player == base.player:
+                x = a.get_x()
+                y = a.get_y()
+                if self.box_x < self.model.getX() and self.box_y > self.model.getY():
+                    if x < self.model.getX() and x > self.box_x and y > self.model.getY() and y < self.box_y:
+                        self.selecteds.append(a)
+                        a.select()
+                elif self.box_x < self.model.getX() and self.box_y < self.model.getY():
+                    if x < self.model.getX() and x > self.box_x and y < self.model.getY() and y > self.box_y:
+                        self.selecteds.append(a)
+                        a.select()
+                elif self.box_x > self.model.getX() and self.box_y < self.model.getY():
+                    if x > self.model.getX() and x < self.box_x and y < self.model.getY() and y > self.box_y:
+                        self.selecteds.append(a)
+                        a.select()
+                elif self.box_x > self.model.getX() and self.box_y > self.model.getY():
+                    if x > self.model.getX() and x < self.box_x and y > self.model.getY() and y < self.box_y:
+                        self.selecteds.append(a)
+                        a.select()
+
+    def set_multiselect(self,state):
+        self.multi_select = state
+        print "set multiselect to",state
+        if state == True:
+            self.box_x,self.box_y = self.model.getX(),self.model.getY()
+            taskMgr.add(self.draw_multiselect_box, "multibox")
+
+    def draw_multiselect_box(self,task):
+        self.select_box.remove()
+        ls = LineSegs()
+        ls.move_to(self.box_x,self.box_y,1)
+        ls.draw_to(self.model.getX(),self.box_y,1)
+        ls.draw_to(self.model.getX(),self.model.getY(),1)
+        ls.draw_to(self.box_x,self.model.getY(),1)
+        ls.draw_to(self.box_x,self.box_y,1)
+        node = ls.create()
+        text = TextNode('text')
+        text.setText(str(self.box_x)+","+str(self.box_y)+"\n"+str(self.model.getX())+","+str(self.model.getY()))
+        textnp = NodePath(text)
+        textnp.setPos(self.box_x,self.box_y,1)
+        textnp.setHpr(0,-90,0)
+        textnp.setScale(20.0)
+        self.select_box = NodePath(node)
+        textnp.reparentTo(self.select_box)
+        self.select_box.reparentTo(render)
+        if self.multi_select == True:
+            return task.cont
+        else:
+            self.select_box.hide()
+            return task.done
+
     def mouse_order(self):
         print "mouse_order"
-        if self.selected != -1 and base.armies[self.selected].state == "normal":
-            print "orders sent"
-            base.armies[self.selected].set_target(True,self.pos3d.getX(),self.pos3d.getY())
+#        if self.selected != -1 and base.armies[self.selected].state == "normal":
+#            print "orders sent"
+        for a in self.selecteds:
+            if a.node_col.getTag("type") == "army":
+                a.set_target(True,self.pos3d.getX(),self.pos3d.getY())
 
     def get_mouse_plane_pos(self, task):
         if base.mouseWatcherNode.hasMouse():
