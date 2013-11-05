@@ -6,31 +6,14 @@ import sys
 
 class TimCam(DirectObject.DirectObject):
     def __init__(self):
-        base.disableMouse()
         self.camera_control()
-        self.keyboard_setup()
+        self.input_setup()
         taskMgr.add(self.camera_update, "UpdateCameraTask")
 
     def camera_control(self):
         self.camera = base.camera
 
-        self.cam_speed = 5
-        self.cam_drag = 0.01
-
-        self.cam_x_moving = False
-        self.cam_y_moving = False
-        self.cam_z_moving = False
-
-        self.cam_x_inc = 0
-        self.cam_y_inc = 0
-        self.cam_z_inc = 5
-
-        self.zoom_in = False
-        self.zoom_out = False
-
-        self.cameraDistance = -50
-        self.camHeight = 25
-
+        self.disabled = False
 
         self.camXAngle = 0
         self.camYAngle = -45
@@ -41,113 +24,45 @@ class TimCam(DirectObject.DirectObject):
         self.camZ = 500
 
     def camera_update(self,task):
-        if self.zoom_in == True:
-            self.camZ -= self.cam_z_inc
-        if self.zoom_out == True:
-            self.camZ += self.cam_z_inc
-
-        if self.cam_x_moving:
-            self.camX+=self.cam_x_inc
-        elif self.cam_x_inc != 0:
-            if (self.cam_x_inc > 0 and self.cam_x_inc-self.cam_drag <= 0) or (self.cam_x_inc < 0 and self.cam_x_inc+self.cam_drag >= 0):
-                self.cam_x_inc = 0
-            elif self.cam_x_inc > 0:
-                self.cam_x_inc -= self.cam_drag
-            elif self.cam_x_inc < 0:
-                self.cam_x_inc -= self.cam_drag
-            else:
-                print "FUCKUP WITH CAM X INC"
-
-        if self.cam_y_moving:
-            self.camY+=self.cam_y_inc
-        elif self.cam_y_inc != 0:
-            if (self.cam_y_inc > 0 and self.cam_y_inc-self.cam_drag <= 0) or (self.cam_y_inc < 0 and self.cam_y_inc+self.cam_drag >= 0):
-                self.cam_y_inc = 0
-            elif self.cam_y_inc > 0:
-                self.cam_y_inc -= self.cam_drag
-            elif self.cam_y_inc < 0:
-                self.cam_y_inc -= self.cam_drag
-            else:
-                print "FUCKUP WITH CAM Y INC"
-
-        #if self.cam_z_moving:
-        #    self.camZ+=self.cam_z_inc
-        #elif self.cam_z_inc != 0:
-        #    if (self.cam_z_inc > 0 and self.cam_z_inc-self.cam_drag <= 0) or (self.cam_z_inc < 0 and self.cam_z_inc+self.cam_drag >= 0):
-        #        self.cam_z_inc = 0
-        #    elif self.cam_z_inc > 0:
-        #        self.cam_z_inc -= self.cam_drag
-        #    elif self.cam_z_inc < 0:
-        #        self.cam_z_inc -= self.cam_drag
-        #    else:
-        #        print "FUCKUP WITH CAM Z INC"
-
         self.camera.setPos(self.camX, self.camY, self.camZ)
         self.camera.setHpr(self.camXAngle, self.camYAngle, self.camZAngle)
-
+        if base.mouseWatcherNode.hasMouse():
+            mx=base.mouseWatcherNode.getMouseX()
+            my=base.mouseWatcherNode.getMouseY()
+            border = 0.1
+            amph = self.camZ/8
+            if mx < -1+border:#-base.screen_width+border:
+                speed = amph*(mx-(-1+border))
+                self.shift((speed,0,0))
+            if mx > 1-border:
+                speed = amph*(mx-(1-border))
+                self.shift((speed,0,0))
+            if my < -1+border:#-base.screen_width+border:
+                speed = amph*(my-(-1+border))
+                self.shift((0,speed,0))
+            if my > 1-border:
+                speed = amph*(my-(1-border))
+                self.shift((0,speed,0))
         return Task.cont
 
-    def camera_move(self, status):
-        if status == "up":
-            self.cam_y_moving = True
-            self.cam_y_inc = self.cam_speed
-        if status == "down":
-            self.cam_y_moving = True
-            self.cam_y_inc = -self.cam_speed
-        if status == "left":
-            self.cam_x_moving = True
-            self.cam_x_inc = -self.cam_speed
-        if status == "right":
-            self.cam_x_moving = True
-            self.cam_x_inc = self.cam_speed
-        if status == "stopX":
-            self.cam_x_moving = False
-        if status == "stopY":
-            self.cam_y_moving = False
-
-    def keyboard_setup(self):
-        self.accept("w", self.keyW)
-        self.accept("w-up", self.stop_y)
-        self.accept("s", self.keyS)
-        self.accept("s-up", self.stop_y)
-        self.accept("a", self.keyA)
-
-        self.accept("escape", self.quit_game)
-
-        self.accept("a-up", self.stop_x)
-        self.accept("d", self.keyD)
-        self.accept("d-up", self.stop_x)
-        self.accept("+", self.ZoomIn)
-        self.accept("+-up", self.ZoomIn)
-        self.accept("-", self.ZoomOut)
-        self.accept("--up", self.ZoomOut)
+    def input_setup(self):
+        self.accept("wheel_down",self.shift,[(0,0,10*(self.camZ/100))])
+        self.accept("wheel_up",self.shift,[(0,0,-10*(self.camZ/100))])
+        self.accept("escape",self.quit_game)
 
     def quit_game(self):
         sys.exit()
 
-    def ZoomIn(self):
-        if self.zoom_in == True:
-            self.zoom_in = False
-        elif self.zoom_in == False:
-            self.zoom_in = True
+    def disable(self):
+        self.disabled = True
 
-    def ZoomOut(self):
-        if self.zoom_out == True:
-            self.zoom_out = False
-        elif self.zoom_out == False:
-            self.zoom_out = True
+    def enable(self):
+        self.disabled = False
 
-    def keyW( self ):
-        self.camera_move("up")
-
-    def keyS( self ):
-        self.camera_move("down")
-
-    def keyA( self ):
-        self.camera_move("left")
-
-    def keyD( self ):
-        self.camera_move("right")
+    def shift(self,vector):
+        self.camX += vector[0]
+        self.camY += vector[1]
+        self.camZ += vector[2]
 
     def stop_x( self ):
         self.camera_move("stopX")

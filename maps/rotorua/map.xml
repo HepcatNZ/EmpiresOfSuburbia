@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<Map scale="2.0" size="1280,948">
+	<name>Battle of the Lakes</name>
+	<map_texture>rotorua.jpg</map_texture>
+	<map_preview>preview.jpg</map_preview>
+	<factions>
+		<faction coin="0" id="0">Neutrals</faction>
+		<faction coin="100" id="1">Reds</faction>
+		<faction coin="100" id="2">Greens</faction>
+	</factions>
+	<objects>
+		<tower faction="1" income="1.0" position="-226.057525635,-301.524810791">Rotorua City</tower>
+		<tower faction="1" income="1.0" position="-26.2617149353,18.9224853516">Fort Mokoia</tower>
+		<tower faction="2" income="1.0" position="-1003.49523926,-703.974243164">Army Base</tower>
+		<tower faction="0" income="1.0" position="-866.047241211,-483.991363525">Tower3</tower>
+		<tower faction="0" income="1.0" position="-527.761352539,-366.76361084">Tower4</tower>
+		<tower faction="0" income="1.0" position="655.846252441,-891.313537598">Tower5</tower>
+		<tower faction="0" income="1.0" position="479.053985596,-412.828826904">Tower6</tower>
+		<tower faction="0" income="1.0" position="202.891540527,204.38949585">Tower7</tower>
+		<tower faction="0" income="1.0" position="736.556945801,126.23765564">Tower8</tower>
+		<tower faction="0" income="1.0" position="748.452148438,414.85635376">Tower9</tower>
+		<tower faction="0" income="1.0" position="-201.7759552,-519.15637207">Tower10</tower>
+		<tower faction="0" income="1.0" position="-383.758087158,107.804580688">Tower11</tower>
+		<tower faction="0" income="1.0" position="-112.370315552,326.134338379">Tower12</tower>
+		<tower faction="0" income="1.0" position="-289.886627197,658.837890625">Tower13</tower>
+		<tower faction="0" income="1.0" position="-754.33190918,369.676086426">Tower14</tower>
+		<tower faction="0" income="1.0" position="-1060.76147461,-65.6669616699">Tower15</tower>
+		<tower faction="0" income="1.0" position="1103.23754883,-375.237823486">Tower16</tower>
+		<army faction="1" position="-268.630340576,-241.18421936">Rebel Army</army>
+		<army faction="1" position="-282.523986816,-317.946716309">Rebel Army</army>
+		<army faction="1" position="-187.699752808,-337.745147705">Belem Army</army>
+		<army faction="1" position="-198.665817261,-393.592773438">Army3</army>
+		<army faction="1" position="-1.32621765137,34.654510498">Army4</army>
+		<army faction="2" position="-953.728759766,-714.918334961">NZ Army</army>
+		<army faction="2" position="-988.314086914,-657.954345703">Army6</army>
+		<army faction="2" position="-1055.45019531,-687.453491211">Army7</army>
+		<army faction="2" position="-1052.39855957,-755.606933594">Army8</army>
+	</objects>
+</Map>

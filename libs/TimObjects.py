@@ -23,6 +23,17 @@ class ObjectsManager:
     def __init__(self):
         print "Object Manager Initialised"
 
+    def get_obj_from_node(self,node):
+        for t in base.towers:
+            if t.get_np() == node:
+                return t
+        for a in base.armies:
+            if a.get_np() == node:
+                return a
+        for b in base.battles:
+            if b.get_np() == node:
+                return b
+
 class GameObject:
     def __init__(self):
         self.my_id = None
@@ -35,6 +46,9 @@ class GameObject:
         self.node_col = None
         self.player = 0
         self.selected = True
+
+    def get_name(self):
+        return self.name
 
     def selection_ring_create(self, segments = 16,size = 1.0):
         ls = LineSegs()
@@ -63,6 +77,9 @@ class GameObject:
     def get_y(self):
         return (self.node_path.getY())
 
+    def get_np(self):
+        return self.node_path
+
     def select(self):
         self.selected = True
         try:
@@ -90,14 +107,14 @@ class MapTable(GameObject):
         self.node_path.reparentTo(render)
 
 class Army(GameObject):
-    def __init__(self,x,y,player,soldiers,general=None):
+    def __init__(self,player,name,x,y,soldiers,general=None):
         global army_count
         self.my_id = army_count
         army_count += 1
 
         print "ARMY ID IS",self.my_id
 
-        self.name = "Army "+str(self.my_id)
+        self.name = name
         self.x = x
         self.y = y
         self.target_x = x
@@ -133,7 +150,7 @@ class Army(GameObject):
         self.node_path = NodePath("army"+str(self.my_id)+"_node_path")
         self.model.reparentTo(self.node_path)
         self.node_path.setPos(x,y,0)
-        self.node_path.setTag("player","p"+str(player))
+        self.node_path.setTag("player",str(player))
         self.node_path.setScale(self.scale,self.scale,self.scale)
 
         self.node_col = self.node_path.attachNewNode(CollisionNode("army"+str(self.my_id)+"_c_node"))
@@ -149,7 +166,7 @@ class Army(GameObject):
         self.army_fight_col.setPos(0,0,0)
         self.army_fight_col.node().addSolid(CollisionSphere(0,0,0,1))
         self.army_fight_col.setColor(1,0,0,0.1)
-        self.army_fight_col.setTag("player","p"+str(player))
+        self.army_fight_col.setTag("player",str(player))
         self.army_fight_col.setTag("state","normal")
         self.army_fight_col.setTag("type","army")
         base.cTrav.addCollider(self.army_fight_col,base.col_manager.col_handler)
@@ -199,7 +216,7 @@ class Army(GameObject):
 
     def move_to_point(self,tx,ty):
             self.target_x = tx
-            self.target_x = ty
+            self.target_y = ty
             dist = float(TCalc.dist_to_point(self.node_path.getX(),self.node_path.getY(),tx,ty))
             print dist
             #time = dist/speed
@@ -212,7 +229,7 @@ class Army(GameObject):
                 print "no sequence"
 
             if dist > 1:
-                self.intvl_army_move = self.node_path.posInterval(dist/self.speed, Point3(tx, ty, 0),startPos=Point3(self.node_path.getX(), self.node_path.getY(), 0))
+                self.intvl_army_move = self.node_path.posInterval(dist/self.speed, Point3(self.target_x, self.target_y, 0),startPos=Point3(self.node_path.getX(), self.node_path.getY(), 0))
                 self.sq_army_move = Sequence(self.intvl_army_move)
                 self.sq_army_move.start()
             else:
@@ -228,8 +245,20 @@ class Army(GameObject):
             else:
                 self.move_to_point(tx,ty)
 
+    def battle_shuffle(self,tx,ty):
+        if base.single_player == False:
+            base.net_manager.army_move(self.my_id,tx,ty)
+        else:
+            self.move_to_point(tx,ty)
+
+class Faction:
+    def __init__(self,name,number,coin):
+        self.name = name
+        self.my_id = number
+        self.coin = coin
+
 class Tower(GameObject):
-    def __init__(self,player,name,x,y):
+    def __init__(self,player,name,x,y,income):
         global tower_count
         self.my_id = tower_count
         tower_count += 1
@@ -241,18 +270,27 @@ class Tower(GameObject):
         self.build_progress = 0.0
         self.build_speed = 1.0
         self.gold_inc = 1.0
-        base.ecn_manager.gold_inc += self.gold_inc
+        if base.player == self.player:
+            base.ecn_manager.gold_inc += self.gold_inc
+            base.vis_manager.update()
 
-        if player == 1:
-            self.model = loader.loadModel("models/tower_red.egg")
-        elif player == 2:
-            self.model = loader.loadModel("models/tower_green.egg")
+        self.model_list = ["models/farmhouse_grey.egg","models/farmhouse_red.egg","models/farmhouse_green.egg"]
+        self.model_list = ["models/tower_grey.egg","models/tower_red.egg","models/tower_green.egg"]
+        self.model = loader.loadModel(self.model_list[self.player])
+
+#        if self.player == 0:
+#            self.model = loader.loadModel("models/tower_grey.egg")
+#        elif self.player == 1:
+#            self.model = loader.loadModel("models/tower_red.egg")
+#        elif self.player == 2:
+#            self.model = loader.loadModel("models/tower_green.egg")
 
         self.node_path = NodePath("tower"+str(self.my_id)+"_node_path")
         self.model.reparentTo(self.node_path)
         self.node_path.setPos(x,y,0)
-        self.node_path.setTag("player","p"+str(player))
+        self.node_path.setTag("player",str(player))
         self.node_path.setScale(tower_scale,tower_scale,tower_scale)
+        self.node_path.setColor(1,1,1,0.1)
 
         self.node_col = self.node_path.attachNewNode(CollisionNode("tower"+str(self.my_id)+"_c_node"))
         self.node_col.setScale((2,2,1))
@@ -267,7 +305,7 @@ class Tower(GameObject):
         self.tower_fight_col.setPos(0,0,0)
         self.tower_fight_col.node().addSolid(CollisionSphere(0,0,0,1))
         self.tower_fight_col.setColor(1,0,0,0.1)
-        self.tower_fight_col.setTag("player","p"+str(player))
+        self.tower_fight_col.setTag("player",str(player))
         self.tower_fight_col.setTag("state","normal")
         #self.tower_fight_col.show()
         base.cTrav.addCollider(self.tower_fight_col,base.col_manager.col_handler)
@@ -278,26 +316,34 @@ class Tower(GameObject):
 
         self.node_path.reparentTo(render)
 
+    def capture_check(self):
+        has_guard = False
+        for a in base.armies:
+            if a.player == self.player and (a.state == "normal" or a.state == "battle"):
+                if base.calculator.dist_to_point(self.get_x(),self.get_y(),a.get_x(),a.get_y()) < 80:
+                    has_guard = True
+        if has_guard == True:
+            return False
+        else:
+            return True
+
     def change_owner(self,new_owner):
         if self.player == base.player:
             base.ecn_manager.gold_inc -= self.gold_inc
         elif new_owner == base.player:
             base.ecn_manager.gold_inc += self.gold_inc
         base.vis_manager.update()
-        if new_owner == 1:
-            self.model.remove()
-            self.model = loader.loadModel("models/tower_red.egg")
-        elif new_owner == 2:
-            self.model.remove()
-            self.model = loader.loadModel("models/tower_green.egg")
-        self.node_path.setTag("player","p"+str(new_owner))
-        self.tower_fight_col.setTag("player","p"+str(new_owner))
+        self.model.remove()
+        self.model = loader.loadModel(self.model_list[new_owner])
+        self.node_path.setTag("player",str(new_owner))
+        self.tower_fight_col.setTag("player",str(new_owner))
         self.player = new_owner
         self.model.reparentTo(self.node_path)
 
     def build_cancel(self):
-        base.ecn_manager.gold += base.ecn_manager.cost_army_gold
-        base.vis_manager.update()
+        if self.player == base.player:
+            base.ecn_manager.gold += base.ecn_manager.cost_army_gold
+            base.vis_manager.update()
         if base.single_player == False and base.client == False:
                 base.net_manager.server_messager("build_cancel",[self.my_id])
         taskMgr.remove("task_tower"+str(self.my_id)+"_build")
@@ -306,8 +352,9 @@ class Tower(GameObject):
             base.vis_manager.statbar.show_tower(self.my_id)
 
     def build_start(self):
-        base.ecn_manager.gold -= base.ecn_manager.cost_army_gold
-        base.vis_manager.update()
+        if self.player == base.player:
+            base.ecn_manager.gold -= base.ecn_manager.cost_army_gold
+            base.vis_manager.update()
         print "Started Building"
         if base.single_player == False and base.client == False:
                 base.net_manager.server_messager("build_start",[self.my_id,self.player,"army"])
@@ -339,11 +386,11 @@ class Tower(GameObject):
             return Task.done
 
     def create_counter(self):
-        new_army = Army(self.node_path.getX(),self.node_path.getY(),self.player,"Infantry",1)
+        new_army = Army(self.player,"Infantry",self.node_path.getX(),self.node_path.getY(),1)
         base.armies.append(new_army)
         new_army.state = "new"
         new_army.army_fight_col.setTag("state","new")
-        intvl_exit = new_army.node_path.posInterval(2, Point3(self.x, self.y-48, 0),startPos=Point3(self.x, self.y, 0))
+        intvl_exit = new_army.node_path.posInterval(2, Point3(self.x, self.y-24, 0),startPos=Point3(self.x, self.y, 0))
 
         def army_ready():
             new_army.state = "normal"
@@ -415,12 +462,12 @@ class Battle(GameObject):
                     counter += 1
                     new_x += a.node_path.getX()
                     new_y += a.node_path.getY()
+            new_x /= len(x_list)
+            new_y /= len(y_list)
+
+            self.node_path.setPos(new_x,new_y,0)
         except:
             pass
-        new_x /= len(x_list)
-        new_y /= len(y_list)
-
-        self.node_path.setPos(new_x,new_y,0)
 
     def shrink(self):
         if len(self.combatants) <= 10:
@@ -487,11 +534,21 @@ class Battle(GameObject):
         self.turn = new_turn
 
     def battle_loop(self,task):
+        towerBuff = 0
         battle_end = False
         army,target,target_id = self.target_recheck()
 
         task.delayTime = self.battle_speed+army.stat_delay
         roll = random.randint(0,self.chance_range)+army.stat_hit
+
+        #Make towers pown arse
+        for t in base.towers:
+            if t.player == army.player:
+                distanceToTower = base.calculator.dist_to_point(army.get_x(),army.get_y(),t.get_x(),t.get_y())
+                if  distanceToTower < 80:
+                    towerBuff = random.randint(0, 40)
+                    roll+=towerBuff
+
         if roll >= self.chance_success:
             roll = random.randint(0,self.chance_range)+target.stat_block
             if roll >= self.chance_success:
@@ -506,9 +563,13 @@ class Battle(GameObject):
         else:
             result = "fail"
 
+        if base.client == False and base.single_player == False:
+            randomness = 80
+            army.battle_shuffle(self.node_path.getX()+random.randint(0,randomness)-randomness/2,self.node_path.getY()+random.randint(0,randomness)-randomness/2)
+
         if base.single_player == False:
-            base.net_manager.server_messager("battle_clash",[self.my_id,army.my_id,target.my_id,result])
-        self.clash(army,target,result)
+            base.net_manager.server_messager("battle_clash",[self.my_id,army.my_id,target.my_id,result,towerBuff])
+        self.clash(army,target,result,towerBuff)
 
         army.turn_end()
         last_turn = self.turn
@@ -545,7 +606,10 @@ class Battle(GameObject):
                 a.army_fight_col.setTag("state","normal")
         self.destroy()
 
-    def clash(self,a1,a2,result):
+    def clash(self,a1,a2,result,buff):
+        if buff != 0:
+            buffText = "^+" +str(buff)
+            TimVisuals.BattleText(self.node_path,buffText,self.x,self.y + 10,(1,1,0,1))
         if result == "block":
             TimVisuals.BattleText(self.node_path,"BLOCK!",self.x,self.y,a2.colour)
         elif result == "hit":
@@ -594,7 +658,8 @@ class Map:
     def __init__(self,width,height,texture,scale):
         self.width = width*scale
         self.height = height*scale
-        self.texture = loader.loadTexture("textures/map/"+texture+".jpg")
+        print texture
+        self.texture = loader.loadTexture(texture)
 
         cm = CardMaker("CardMaker")
         cm.setFrame((self.width/2,self.height/2,0),(-self.width/2,self.height/2,0),(-self.width/2,-self.height/2,0),(self.width/2,-self.height/2,0))

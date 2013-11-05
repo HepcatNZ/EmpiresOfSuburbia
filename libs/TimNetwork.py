@@ -36,6 +36,8 @@ BATTLE_CLASH = 102
 BATTLE_ARMYADD = 103
 BATTLE_END = 110
 
+TOWER_CAPTURE = 40
+
 REQUEST_MOVE_COUNTER = 120
 REQUEST_TOWER_TRAIN = 150
 
@@ -149,6 +151,12 @@ class NetworkManager:
             order.addInt8(args[1])
             order.addString(args[2])
             self.send_package(order)
+        elif msg == "tower_capture":
+            order = PyDatagram()
+            order.addUint16(TOWER_CAPTURE)
+            order.addInt32(args[0])
+            order.addInt8(args[1])
+            self.send_package(order)
         elif msg == "build_complete":
             order = PyDatagram()
             order.addUint16(BUILD_COMPLETE)
@@ -179,6 +187,7 @@ class NetworkManager:
             order.addInt32(args[1])
             order.addInt32(args[2])
             order.addString(args[3])
+            order.addInt8(args[4])
             self.send_package(order)
         elif msg == "battle_turn":
             order = PyDatagram()
@@ -306,7 +315,8 @@ class NetworkManager:
             a1 = data_iter.getInt32()
             a2 = data_iter.getInt32()
             result = data_iter.getString()
-            base.battles[battle].clash(base.armies[a1],base.armies[a2],result)
+            buff = data_iter.getInt8()
+            base.battles[battle].clash(base.armies[a1],base.armies[a2],result,buff)
         if msgID == BATTLE_ARMYADD:
             bat = data_iter.getInt32()
             army = data_iter.getInt32()
@@ -322,6 +332,10 @@ class NetworkManager:
             player = data_iter.getInt8()
             type = data_iter.getString()
             base.towers[t_id].build_start()
+        if msgID == TOWER_CAPTURE:
+            t_id = data_iter.getInt32()
+            player = data_iter.getInt8()
+            base.towers[t_id].change_owner(player)
         if msgID == BUILD_CANCEL:
             t_id = data_iter.getInt32()
             base.towers[t_id].build_cancel()

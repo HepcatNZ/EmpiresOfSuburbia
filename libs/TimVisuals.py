@@ -58,7 +58,7 @@ class GameStatBar:
         self.objs.append(odd_back)
         self.objs.append(odd_front)
 
-        self.bar_build = BarProgress(-width+0.5,-width+1.1,1.0,0.05,50.0,(0.4,0.4,0.4,1),(1,1,0,1))
+        self.bar_build = BarProgress(-width+0.5,-0.8,1.0,0.05,50.0,(0.4,0.4,0.4,1),(1,1,0,1))
 
         self.but_train = DirectButton( text = "Train Infantry",pos = (-width+0.7,0,-0.8),
                text_scale = .05,frameSize=(-0.2,0.2,-0.05,0.05),borderWidth = (.02,.02),
@@ -86,7 +86,7 @@ class GameStatBar:
         self.objs[1].show()
         self.objs[1].setImage("textures/interface/army.jpg")
         self.objs[2].show()
-        self.objs[2].setText(base.armies[army_id].name)
+        self.objs[2].setText(base.armies[army_id].get_name())
         self.objs[2].setFg(col)
 
     def show_battle(self,battle_id):
@@ -123,7 +123,7 @@ class GameStatBar:
             self.but_train["command"] = self.focus.build_start
             self.but_cancel["command"] = self.focus.build_cancel
         self.objs[2].show()
-        self.objs[2].setText("Tower"+str(tower_id))
+        self.objs[2].setText(base.towers[tower_id].get_name())
         self.objs[2].setFg(col)
         self.objs[3].hide()
         self.objs[4].hide()
@@ -212,4 +212,4 @@ class ResourceBar:
     def __init__(self,x,y,size):
         self.text = OnscreenText("Gold: "+str(base.ecn_manager.gold)+" +"+str(base.ecn_manager.gold_inc),pos = (x,y),scale = size,fg=base.vis_manager.get_player_col(base.player))
     def update(self):
-        self.text.setText("Gold: "+str(base.ecn_manager.gold)+" +"+str(base.ecn_manager.gold_inc))
+        self.text.setText("Gold: "+str(int(base.ecn_manager.gold))+" +"+str(base.ecn_manager.gold_inc))

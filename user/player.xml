@@ -1,1 +1,6 @@
-<PlayerData><name>Hans de Roode</name><kingdom>Graphin Confederacy</kingdom><direct_connect>192.168.1.12</direct_connect></PlayerData>
+<?xml version="1.0" ?>
+<PlayerData>
+	<name>Hans de Roode</name>
+	<kingdom>Uthel</kingdom>
+	<direct_connect>192.168.1.12</direct_connect>
+</PlayerData>

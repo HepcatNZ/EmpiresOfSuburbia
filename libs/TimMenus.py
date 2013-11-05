@@ -5,7 +5,7 @@ from direct.interval.IntervalGlobal import *
 from direct.showbase.ShowBase import Point3
 from direct.gui.DirectGui import *
 from direct.gui.DirectGuiBase import *
-from panda3d.core import Vec3
+from panda3d.core import Vec3, TextNode
 import sys
 import Image
 
@@ -215,6 +215,7 @@ class MenuMulti(MenuType):
 
     def menu_host_game(self):
         base.client = False
+        base.player = 1
         base.net_manager.connection_open()
         base.menu_manager.menus["mp-game"].host_init()
         base.menu_manager.menu_goto("mp-game")
@@ -226,6 +227,7 @@ class MenuMulti(MenuType):
         base.client = True
         base.player = 2
         base.net_manager.connection_open()
+        print "TRYING TO CONNECT TO",base.direct_connect_ip
         if base.net_manager.client_connect(base.direct_connect_ip):
             base.menu_manager.menus["mp-game"].join_init()
             base.menu_manager.menu_goto("mp-game")
@@ -432,25 +434,36 @@ class MenuOptions(MenuType):
         self.obj_list = []
         self.obj_list.append(self.MenuBackground("textures/menu/scenes/scene7.jpg",1.34))
         self.obj_list.append(self.SmallMenuButton("Cancel",-0.8,-0.8,0.4,0.2,self.back,self.obj_list))
-        entry_name = DirectEntry(pos = (-0.76,0,0.9),text = "" ,scale=.05, width = 15,
-                    initialText=base.player_name, numLines = 1,focus=0)
-        self.obj_list.append(entry_name)#command=setText,#focusInCommand=self.clear_entry)
-        self.obj_list.append(OnscreenText("Character Name:",pos=(-1,0.9),style=1, fg=(1,1,1,1), scale = 0.05))
-        entry_kgdm = DirectEntry(pos = (-0.76,0,0.8),text = "" ,scale=.05, width = 15,
-                    initialText=base.player_kingdom, numLines = 1,focus=0)
-        self.obj_list.append(entry_kgdm)#command=setText,#focusInCommand=self.clear_entry)
-        self.obj_list.append(OnscreenText("Kingdom Name:",pos=(-1,0.8),style=1, fg=(1,1,1,1), scale = 0.05))
 
-        entry_ip = DirectEntry(pos = (-0.76,0,0.7),text = "" ,scale=.05, width = 15,
+
+        self.obj_list.append(OnscreenText("User Info",pos=(-0.76,0.9),style=1, fg=(1,1,1,1), scale = 0.05, align = TextNode.ALeft))
+        #Character Name
+        self.obj_list.append(OnscreenText("Character Name:",pos=(-0.8,0.8),style=1, fg=(1,1,1,1), scale = 0.05, align = TextNode.ARight))
+        entry_name = DirectEntry(pos = (-0.76,0,0.8),text = "" ,scale=.05, width = 15,
+                    initialText=base.player_name, numLines = 1,focus=0)
+        self.obj_list.append(entry_name)
+
+        #Kingdom Name
+        self.obj_list.append(OnscreenText("Kingdom Name:",pos=(-0.8,0.7),style=1, fg=(1,1,1,1), scale = 0.05, align = TextNode.ARight))
+        entry_kgdm = DirectEntry(pos = (-0.76,0,0.7),text = "" ,scale=.05, width = 15,
+                    initialText=base.player_kingdom, numLines = 1,focus=0)
+        self.obj_list.append(entry_kgdm)
+
+        self.obj_list.append(OnscreenText("Networking Info",pos=(-0.76,0.6),style=1, fg=(1,1,1,1), scale = 0.05, align = TextNode.ALeft))
+
+        #Direct Connect IP
+        self.obj_list.append(OnscreenText("Direct Connect IP:",pos=(-0.8,0.5),style=1, fg=(1,1,1,1), scale = 0.05, align = TextNode.ARight))
+        entry_ip = DirectEntry(pos = (-0.76,0,0.5),text = "" ,scale=.05, width = 15,
                     initialText=base.direct_connect_ip, numLines = 1,focus=0)
-        self.obj_list.append(entry_ip)#command=setText,#focusInCommand=self.clear_entry)
-        self.obj_list.append(OnscreenText("Direct Connect IP:",pos=(-1,0.7),style=1, fg=(1,1,1,1), scale = 0.05))
+        self.obj_list.append(entry_ip)
+
 
         self.obj_list.append(self.SmallMenuButton("Save Changes",0.8,-0.8,0.6,0.2,self.menu_options_save))
 
     def menu_options_save(self):
-        base.player_name = self.obj_list[2].get()
-        base.player_kingdom = self.obj_list[4].get()
+        base.player_name = self.obj_list[4].get()
+        base.player_kingdom = self.obj_list[6].get()
+        base.direct_connect_ip = self.obj_list[9].get()
         base.xml_manager.save_playerdata()
         self.back(self.obj_list)
 
