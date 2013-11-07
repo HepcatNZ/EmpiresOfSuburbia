@@ -5,8 +5,8 @@
 	<map_preview>preview.jpg</map_preview>
 	<factions>
 		<faction coin="0" id="0">Neutrals</faction>
-		<faction coin="100" id="1">Reds</faction>
-		<faction coin="100" id="2">Greens</faction>
+		<faction coin="120" id="1">Reds</faction>
+		<faction coin="320" id="2">Greens</faction>
 	</factions>
 	<objects>
 		<tower faction="1" income="1.0" position="-226.057525635,-301.524810791">Rotorua City</tower>

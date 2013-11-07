@@ -41,17 +41,17 @@ class MenuMapCreate(MenuBase):
     def create_components(self):
         self.items = []
         self.items.append(OnscreenText(text="Map Name:",fg=(1,1,1,1),pos=(-base.screen_width+0.05,0.9),scale=0.05,align=TextNode.ALeft))#0
-        self.items.append(DirectEntry(pos=(-base.screen_width+0.61,0,0.9),scale=0.05,width=20,initialText="Unnamed Map",numLines=1,focus=1))#1
+        self.items.append(DirectEntry(pos=(-base.screen_width+0.61,0,0.9),scale=0.05,width=20,initialText="New Map",numLines=1,focus=1))#1
         self.items.append(OnscreenText(text="Map Folder: data/maps/",fg=(1,1,1,1),pos=(-base.screen_width+0.05,0.8),scale=0.05,align=TextNode.ALeft))#2
-        self.items.append(DirectEntry(pos=(-base.screen_width+0.61,0,0.8),scale=0.05,width=20,initialText="pandrea",numLines=1,focus=0))#3
+        self.items.append(DirectEntry(pos=(-base.screen_width+0.61,0,0.8),scale=0.05,width=20,initialText="new_map",numLines=1,focus=0))#3
         self.items.append(OnscreenText(text="Warning folder already exists!",fg=(1,1,0,1),pos=(-base.screen_width+1.65,0.8),scale=0.05,align=TextNode.ALeft))#4
 
         self.items.append(OnscreenText(text="Map Texture:",fg=(1,1,1,1),pos=(-base.screen_width+0.05,0.7),scale=0.05,align=TextNode.ALeft))#5
-        self.items.append(DirectEntry(pos=(-base.screen_width+0.61,0,0.7),scale=0.05,width=20,initialText="pandrea_tex.jpg",numLines=1,focus=0))#6
+        self.items.append(DirectEntry(pos=(-base.screen_width+0.61,0,0.7),scale=0.05,width=20,initialText="untitled.jpg",numLines=1,focus=0))#6
         self.items.append(OnscreenText(text="Invalid Texture!",fg=(1,0,0,1),pos=(-base.screen_width+1.65,0.7),scale=0.05,align=TextNode.ALeft))#7
 
         self.items.append(OnscreenText(text="Preview Image:",fg=(1,1,1,1),pos=(-base.screen_width+0.05,0.6),scale=0.05,align=TextNode.ALeft))#8
-        self.items.append(DirectEntry(pos=(-base.screen_width+0.61,0,0.6),scale=0.05,width=20,initialText="img.png",numLines=1,focus=0))#9
+        self.items.append(DirectEntry(pos=(-base.screen_width+0.61,0,0.6),scale=0.05,width=20,initialText="untitled.jpg",numLines=1,focus=0))#9
         self.items.append(OnscreenText(text="Invalid Image!",fg=(1,0,0,1),pos=(-base.screen_width+1.65,0.6),scale=0.05,align=TextNode.ALeft))#10
 
         self.items.append(OnscreenText(text="Map Size:",fg=(1,1,1,1),pos=(-base.screen_width+0.05,0.5),scale=0.05,align=TextNode.ALeft))#11

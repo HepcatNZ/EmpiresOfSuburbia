@@ -16,7 +16,7 @@ class EmpiresOfSuburbia(ShowBase):
         self.player_name = "Unknown Warrior"
         self.player_kingdom = "Unknown Kingdom"
         self.direct_connect_ip = "192.168.1.12"
-        self.player = 1
+        self.player = 2
         base.use_map_factions = False
 
         self.set_fullscreen(True)
@@ -39,8 +39,8 @@ class EmpiresOfSuburbia(ShowBase):
     def set_fullscreen(self,status):
         wp = WindowProperties()
 
-        self.win_width = 1920
-        self.win_height = 1080
+        self.win_width = base.pipe.getDisplayWidth()
+        self.win_height = base.pipe.getDisplayHeight()
         self.screen_width = self.win_width/self.win_height
 
         if status == True:
@@ -66,9 +66,12 @@ class EmpiresOfSuburbia(ShowBase):
         self.towers = []
         self.battles = []
 
-        self.xml_manager.map_load("maps/rotorua/map.xml")
+        self.xml_manager.map_load("maps/Nepal/map.xml")
 
-        self.map = TimObjects.Map(self.map_width,self.map_height,"maps/rotorua/"+self.map_tex,self.map_scale)
+        base.ecn_manager.gold = base.factions[base.player].coin
+        base.vis_manager.update()
+
+        self.map = TimObjects.Map(self.map_width,self.map_height,"maps/Nepal/"+self.map_tex,self.map_scale)
 #        for i in range(10):
 #            self.armies.append(TimObjects.Army(1,"Infantry",200+(48*i),500,0))
 #        for i in range(10):

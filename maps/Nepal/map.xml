@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<Map scale="2.0" size="1024,687">
+	<name>Nepal</name>
+	<map_texture>Nepal.jpg</map_texture>
+	<map_preview>Nepal.jpg</map_preview>
+	<factions>
+		<faction coin="0" id="0">Neutrals</faction>
+		<faction coin="125" id="1">Reds</faction>
+		<faction coin="125" id="2">Greens</faction>
+	</factions>
+	<objects>
+		<tower faction="1" income="1.0" position="860.838317871,163.856719971">Hill1</tower>
+		<tower faction="1" income="1.0" position="379.203369141,241.322479248">Hill2</tower>
+		<tower faction="2" income="1.0" position="-366.168640137,-488.621185303">Gully1</tower>
+		<tower faction="2" income="1.0" position="-890.328857422,-388.018371582">Gully2</tower>
+		<tower faction="0" income="1.0" position="-263.866699219,32.6607208252">Tower4</tower>
+		<tower faction="0" income="1.0" position="-81.9905395508,-54.9092788696">Tower5</tower>
+		<tower faction="0" income="1.0" position="101.569641113,-149.215423584">Tower6</tower>
+		<tower faction="0" income="1.0" position="367.647705078,-265.4140625">Tower7</tower>
+		<tower faction="0" income="1.0" position="770.132873535,-427.081726074">Tower8</tower>
+		<tower faction="0" income="1.0" position="792.025390625,355.996032715">Tower9</tower>
+		<tower faction="0" income="1.0" position="-905.485168457,-629.166320801">Tower10</tower>
+		<tower faction="0" income="1.0" position="-385.117431641,-186.264266968">Tower11</tower>
+		<tower faction="0" income="1.0" position="514.158996582,34.3447570801">Tower12</tower>
+	</objects>
+</Map>
